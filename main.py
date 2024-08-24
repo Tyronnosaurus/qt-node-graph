@@ -7,4 +7,4 @@ if __name__ == '__main__':
 
     wnd = NodeEditorWnd()
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
