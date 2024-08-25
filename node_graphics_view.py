@@ -13,11 +13,9 @@ class QDMGraphicsView(QGraphicsView):
         
         self.setScene(self.grScene)
 
-        self.zoomInFactor = 1.25
         self.zoom = 10  # Current zoom
-        # self.zoomStep = 1
-        # self.zoomClamp = False
-        # self.zoomRange = [0, 10]
+        self.zoomInFactor = 1.25
+        self.zoomRange = [0, 20]    # To limit how many times we can scroll up or down
 
 
 
@@ -85,15 +83,25 @@ class QDMGraphicsView(QGraphicsView):
         return super().mouseReleaseEvent(event)
 
 
-    def wheelEvent(self, event):
-        # Calculate zoom Factor
-        
+    def wheelEvent(self, event):       
 
         # Calculate zoom
         if event.angleDelta().y() > 0:  # Scroll wheel up (zoom in)
             zoomFactor = self.zoomInFactor
+            self.zoom += 1
         else:                           # Scroll wheel down (zoom out)
             zoomFactor = 1 / self.zoomInFactor
+            self.zoom -= 1
+
+        # Check for clamping
+        clamped = False
+        if (self.zoom < self.zoomRange[0]):
+            self.zoom = self.zoomRange[0]
+            clamped = True
+        if (self.zoom > self.zoomRange[1]):
+            self.zoom = self.zoomRange[1]
+            clamped = True
 
         # Set scene scale (same for both axes)
-        self.scale(zoomFactor, zoomFactor)
+        if (not clamped):  self.scale(zoomFactor, zoomFactor)
+
