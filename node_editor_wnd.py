@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QGraphicsItem, QPushButton, 
 from PySide6.QtGui import QBrush, QPen, QColor, QFont
 from PySide6.QtCore import Qt
 
-from node_graphics_scene import QDMGraphicsScene
+from node_scene import Scene
 from node_graphics_view import QDMGraphicsView
 
 
@@ -22,7 +22,9 @@ class NodeEditorWnd(QWidget):
         self.setLayout(self.layout)
 
         # Create graphics scene
-        self.grScene = QDMGraphicsScene()
+        self.scene = Scene()
+        self.grScene = self.scene.grScene
+
 
         # Create graphics view to show the scene
         self.view = QDMGraphicsView(self.grScene, self)
