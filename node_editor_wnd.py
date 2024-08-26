@@ -1,4 +1,5 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QApplication
+from PySide6.QtCore import QFile
 
 from node_scene import Scene
 from node_node import Node
@@ -10,6 +11,9 @@ class NodeEditorWnd(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+
+        self.stylesheet_filename = 'qss/nodestyle.qss'
+        self.loadStylesheet(self.stylesheet_filename)
 
         self.initUI()
 
@@ -31,3 +35,11 @@ class NodeEditorWnd(QWidget):
 
         self.setWindowTitle("Node Editor")
         self.show()
+
+
+    def loadStylesheet(self, filename):
+        print('STYLE loading:', filename)
+        file = QFile(filename)
+        file.open(QFile.ReadOnly | QFile.Text)
+        stylesheet = file.readAll()
+        QApplication.instance().setStyleSheet(str(stylesheet, encoding='utf-8'))

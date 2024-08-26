@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QGraphicsItem, QGraphicsTextItem
+from PySide6.QtWidgets import QGraphicsItem, QGraphicsTextItem, QGraphicsProxyWidget
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QPen, QBrush, QFont, QColor, QPainterPath
 
@@ -6,8 +6,11 @@ from PySide6.QtGui import QPen, QBrush, QFont, QColor, QPainterPath
 class QDMGraphicsNode(QGraphicsItem):
     """ Node that we can place on the scene. Consists of a box with a title, sockets to connect to other nodes, etc. """
 
-    def __init__(self, node, title='Node Graphics Item', parent=None):
+    def __init__(self, node, parent=None):
         super().__init__(parent)
+
+        self.node = node
+        self.content = self.node.content
 
         self._title_color = Qt.white
         self._title_font = QFont("Ubuntu", 10)
@@ -24,10 +27,27 @@ class QDMGraphicsNode(QGraphicsItem):
         self._brush_title = QBrush(QColor("#FF313131"))
         self._brush_background = QBrush(QColor("#E3212121"))
 
+        # Init title
         self.initTitle()
-        self.title = title
+        self.title = self.node.title
+
+        # Init sockets
+
+        # Init content
+        self.initContent()
 
         self.initUI()
+
+
+    @property
+    def title(self):
+        return self._title
+    
+    
+    @title.setter
+    def title(self, value):
+        self._title = value
+        self.title_item.setPlainText(self._title)
 
 
     def boundingRect(self):
@@ -47,18 +67,16 @@ class QDMGraphicsNode(QGraphicsItem):
         self.title_item.setTextWidth(self.width - 2 * self._padding)
 
 
-    @property
-    def title(self):
-        return self._title
-
-
-    @title.setter
-    def title(self, value):
-        self._title = value
-        self.title_item.setPlainText(self._title)
+    def initContent(self):
+        self.grContent = QGraphicsProxyWidget(self)
+        self.content.setGeometry(self.edge_size, self.title_height + self.edge_size,
+                                 self.width - 2*self.edge_size, self.height - 2*self.edge_size-self.title_height)
+        self.grContent.setWidget(self.content)
 
 
     def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
+        """ Reimplements QGraphicsItem.paint(). Called whenever the node is re-painted. """
+        
         # Title
         path_title = QPainterPath()
         path_title.setFillRule(Qt.WindingFill)
