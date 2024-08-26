@@ -18,13 +18,16 @@ class QDMGraphicsSocket(QGraphicsItem):
         self._pen.setWidthF(self.outline_width)
         self._brush = QBrush(self._color_background)
 
+
     def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         # Paint circle
         painter.setBrush(self._brush)
         painter.setPen(self._pen)
         painter.drawEllipse(-self.radius, -self.radius, 2 * self.radius, 2 * self.radius)
 
+
     def boundingRect(self):
+        """ Reimplementation of QGraphicsItem.boundingRect(). Needed by Qt to know when to redraw the node. """
         return QRectF(
             - self.radius - self.outline_width,
             - self.radius - self.outline_width,

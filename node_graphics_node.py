@@ -4,7 +4,7 @@ from PySide6.QtGui import QPen, QBrush, QFont, QColor, QPainterPath
 
 
 class QDMGraphicsNode(QGraphicsItem):
-    """ Node that we can place on the scene. Consists of a box with a title, sockets to connect to other nodes, etc. """
+    """ Node that we can place on the scene. Consists of a box with a title, its contents, sockets to connect to other nodes, etc. """
 
     def __init__(self, node, parent=None):
         super().__init__(parent)
@@ -22,7 +22,7 @@ class QDMGraphicsNode(QGraphicsItem):
         self._padding = 4.0
 
         self._pen_default = QPen(QColor("#7F000000"))
-        self._pen_selected = QPen(QColor("#FFFFA637"))
+        self._pen_selected = QPen(QColor("#FFFFA637"))  #For the outline when node is selected
 
         self._brush_title = QBrush(QColor("#FF313131"))
         self._brush_background = QBrush(QColor("#E3212121"))
@@ -52,6 +52,7 @@ class QDMGraphicsNode(QGraphicsItem):
 
 
     def boundingRect(self):
+        """ Reimplementation of QGraphicsItem.boundingRect(). Needed by Qt to know when to redraw the node. """
         return QRectF(0, 0, self.width, self.height).normalized()
 
 

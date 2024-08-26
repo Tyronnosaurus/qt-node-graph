@@ -40,6 +40,7 @@ class NodeEditorWnd(QWidget):
 
 
     def addNodes(self):
+        """ Adds some sample nodes """
         node1 = Node(self.scene, "My Awesome Node 1", inputs=[1,2,3], outputs=[1])
         node2 = Node(self.scene, "My Awesome Node 2", inputs=[1,2,3], outputs=[1])
         node3 = Node(self.scene, "My Awesome Node 3", inputs=[1,2,3], outputs=[1])
