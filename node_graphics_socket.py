@@ -6,8 +6,9 @@ from PySide6.QtCore import QRectF
 class QDMGraphicsSocket(QGraphicsItem):
     """ Graphical representation of a socket (the circle representing the inputs and outputs of a node) """
     
-    def __init__(self, parent=None, socket_type=1):
-        super().__init__(parent)
+    def __init__(self, socket, socket_type=1):
+        self.socket = socket
+        super().__init__(socket.node.grNode)
 
         self.radius = 6.0
         self.outline_width = 1.0
