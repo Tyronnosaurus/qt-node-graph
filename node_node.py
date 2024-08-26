@@ -36,6 +36,7 @@ class Node():
             counter += 1
             self.outputs.append(socket)
 
+
     @property
     def pos(self):
         return self.grNode.pos()  # QPointF
@@ -54,4 +55,5 @@ class Node():
             # Start from top
             y = self.grNode.title_height + self.grNode._padding + self.grNode.edge_size + index * self.socket_spacing
 
-        return x, y
+        return [x, y]
+
