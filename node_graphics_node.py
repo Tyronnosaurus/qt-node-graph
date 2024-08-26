@@ -41,9 +41,14 @@ class QDMGraphicsNode(QGraphicsItem):
 
 
     def mouseMoveEvent(self, event):
-        """ Overrides parent's method. Called whenever the node is moved. """
+        """ Overrides parent's method. Called whenever the node is dragged. """
         super().mouseMoveEvent(event)
-        self.node.updateConnectedEdges()    # Make edges redraw so that they remain connected to the socket
+        
+        # Make edges redraw so that they remain connected to their sockets as the node moves around
+        # TODO: optimize to just update the selected nodes
+        for node in self.scene().scene.nodes:
+            if node.grNode.isSelected():
+                node.updateConnectedEdges()
 
 
     @property

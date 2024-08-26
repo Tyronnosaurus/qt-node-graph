@@ -7,5 +7,6 @@ QDMNodeContentWidget QLabel {
 }
 
 QGraphicsView {
-    selection-background-color: rgb(255, 255, 255);
+    /* Color of rectangle used to select multiple elements at once */
+    selection-background-color: rgb(255, 255, 0);
 }
