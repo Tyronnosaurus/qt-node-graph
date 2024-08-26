@@ -4,7 +4,6 @@ from node_graphics_edge import QDMGraphicsEdgeDirect, QDMGraphicsEdgeBezier
 EDGE_TYPE_DIRECT = 1
 EDGE_TYPE_BEZIER = 2
 
-DEBUG = True
 
 class Edge:
     """ Line or curve that connects two sockets """
@@ -24,8 +23,6 @@ class Edge:
 
         self.updatePositions()
 
-        if DEBUG: print("Edge: ", self.grEdge.posSource, "to", self.grEdge.posDestination)
-
         self.scene.grScene.addItem(self.grEdge)
 
 
@@ -41,9 +38,6 @@ class Edge:
             end_pos[0] += self.end_socket.node.grNode.pos().x()
             end_pos[1] += self.end_socket.node.grNode.pos().y()
             self.grEdge.setDestination(*end_pos)
-        
-        if DEBUG: print(" SS:", self.start_socket)
-        if DEBUG: print(" ES:", self.end_socket)
         
         self.grEdge.update()
 
