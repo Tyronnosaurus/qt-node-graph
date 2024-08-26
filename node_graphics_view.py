@@ -43,6 +43,7 @@ class QDMGraphicsView(QGraphicsView):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)    # Anchor for when zooming in and out
+        self.setDragMode(QGraphicsView.RubberBandDrag)  # Enables selection of multiple components with a box using left mouse button
 
 
 
