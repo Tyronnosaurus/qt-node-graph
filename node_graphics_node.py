@@ -40,6 +40,12 @@ class QDMGraphicsNode(QGraphicsItem):
         self.initUI()
 
 
+    def mouseMoveEvent(self, event):
+        """ Overrides parent's method. Called whenever the node is moved. """
+        super().mouseMoveEvent(event)
+        self.node.updateConnectedEdges()    # Make edges redraw so that they remain connected to the socket
+
+
     @property
     def title(self):
         return self._title

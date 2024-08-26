@@ -57,3 +57,12 @@ class Node():
 
         return [x, y]
 
+
+    def updateConnectedEdges(self):
+        """
+        Check each inpt and output socket to see if they have a connected edge. If so, update the positions of that edge.
+        Useful for when we drag the node around and want the edges to follow.
+        """
+        for socket in (self.inputs + self.outputs):
+            if socket.hasEdge():
+                socket.edge.updatePositions()
