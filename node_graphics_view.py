@@ -4,6 +4,9 @@ from PySide6.QtCore import Qt, QEvent
 
 
 class QDMGraphicsView(QGraphicsView):
+    """
+    Represents the view of the visible portion of a scene.
+    """
 
     def __init__(self, grScene, parent=None):
         super().__init__(parent)
@@ -25,30 +28,22 @@ class QDMGraphicsView(QGraphicsView):
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-        self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)    #Anchor for when zooming out and in
+        self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)    # Anchor for when zooming in and out
 
 
 
     def mousePressEvent(self, event):
-        if (event.button() == Qt.MouseButton.MiddleButton):
-            self.middleMouseButtonPressed(event)
-        elif (event.button() == Qt.MouseButton.LeftButton):
-            self.leftMouseButtonPress(event)
-        elif (event.button() == Qt.MouseButton.RightButton):
-            self.rightMouseButtonPress(event)
-        else:
-            super().mousePressEvent(event)
+        if (event.button() == Qt.MouseButton.MiddleButton):  self.middleMouseButtonPressed(event)
+        elif (event.button() == Qt.MouseButton.LeftButton):  self.leftMouseButtonPress(event)
+        elif (event.button() == Qt.MouseButton.RightButton): self.rightMouseButtonPress(event)
+        else:                                                super().mousePressEvent(event)
 
 
     def mouseReleaseEvent(self, event):
-        if (event.button() == Qt.MouseButton.MiddleButton):
-            self.middleMouseButtonReleased(event)
-        elif event.button() == Qt.LeftButton:
-            self.leftMouseButtonRelease(event)
-        elif event.button() == Qt.RightButton:
-            self.rightMouseButtonRelease(event)
-        else:
-            super().mouseReleaseEvent(event)
+        if (event.button() == Qt.MouseButton.MiddleButton):  self.middleMouseButtonReleased(event)
+        elif (event.button() == Qt.MouseButton.LeftButton):  self.leftMouseButtonRelease(event)
+        elif (event.button() == Qt.MouseButton.RightButton): self.rightMouseButtonRelease(event)
+        else:                                                super().mouseReleaseEvent(event)
 
     
     def middleMouseButtonPressed(self, event):
@@ -56,6 +51,7 @@ class QDMGraphicsView(QGraphicsView):
         releaseEvent = QMouseEvent(QEvent.Type.MouseButtonRelease, event.localPos(), event.screenPos(), Qt.MouseButton.LeftButton, Qt.MouseButton.NoButton, event.modifiers())
         super().mouseReleaseEvent(releaseEvent)
 
+        # Enable Drag mode. In this mode, the user can drag the canvas with the left mouse button
         self.setDragMode(QGraphicsView.ScrollHandDrag)
 
         # SetDragMode only works with the left mouse button, so we'll fake a buttonpress to be able to drag while still pressing the middle button
@@ -83,7 +79,8 @@ class QDMGraphicsView(QGraphicsView):
         return super().mouseReleaseEvent(event)
 
 
-    def wheelEvent(self, event):       
+
+    def wheelEvent(self, event):
 
         # Calculate zoom
         if event.angleDelta().y() > 0:  # Scroll wheel up (zoom in)
@@ -93,7 +90,7 @@ class QDMGraphicsView(QGraphicsView):
             zoomFactor = 1 / self.zoomInFactor
             self.zoom -= 1
 
-        # Check for clamping
+        # Check for zoom clamping
         clamped = False
         if (self.zoom < self.zoomRange[0]):
             self.zoom = self.zoomRange[0]
@@ -103,5 +100,5 @@ class QDMGraphicsView(QGraphicsView):
             clamped = True
 
         # Set scene scale (same for both axes)
-        if (not clamped):  self.scale(zoomFactor, zoomFactor)
-
+        if (not clamped):
+            self.scale(zoomFactor, zoomFactor)

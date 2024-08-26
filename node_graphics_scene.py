@@ -6,6 +6,10 @@ import math
 
 
 class QDMGraphicsScene(QGraphicsScene):
+    """
+    Custom class to implement a scene (a surface for managing a large number of 2D graphical items).
+    The scene represents the whole surface, including the area that is hidden.
+    """
 
     def __init__(self, scene, parent=None):
         super().__init__(parent)
@@ -16,6 +20,7 @@ class QDMGraphicsScene(QGraphicsScene):
         self.gridSize = 20
         self.gridSquares = 5
 
+        # Background colors
         self._color_background = QColor("#393939")
         self._color_light = QColor("#2f2f2f")
         self._color_dark = QColor("#292929")
@@ -29,13 +34,17 @@ class QDMGraphicsScene(QGraphicsScene):
 
 
 
-    def setGrScene(self, width, height):
-        self.setSceneRect(-width // 2, -height // 2, width, height)
+    def setGrScene(self, width: int, height:int ) -> None:
+        """ Defines the limits of the scene (which otherwise would be infinite). This limits how far we can drag the scene around before finding the limit. """
+        self.setSceneRect(-width//2, -height//2, width, height)
 
 
-
-    # Create background grid
+   
     def drawBackground(self, painter, rect):
+        """ 
+        Overrides QGraphicsScene's drawBackground and gets called every time the scene is redrawn.
+        We use it to draw a custom background with a grid.
+        """
         super().drawBackground(painter, rect)
 
         # Preparations

@@ -1,13 +1,15 @@
 from node_graphics_scene import QDMGraphicsScene
 
 
-class Scene:
+class Scene():
+    """ Wrapper around QDMGraphicsScene """
+
     def __init__(self):
         self.nodes = []
         self.edges = []
 
-        self.scene_width = 64000
-        self.scene_height = 64000
+        self.scene_width = 16000
+        self.scene_height = 16000
 
         self.initUI()
 
