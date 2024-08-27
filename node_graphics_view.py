@@ -10,7 +10,7 @@ from node_edge import Edge, EDGE_TYPE_BEZIER
 MODE_NOOP = 1
 MODE_EDGE_DRAG = 2
 
-EDGE_DRAG_START_THRESHOLD = 10
+EDGE_DRAG_START_THRESHOLD = 15
 
 DEBUG = True
 
@@ -97,20 +97,20 @@ class QDMGraphicsView(QGraphicsView):
         # We store the position of last LMB click
         self.last_lmb_click_scene_pos = self.mapToScene(event.pos())
 
-        # Logic
+
+        # If we click on a socket, start dragging an edge 
         if (type(item) is QDMGraphicsSocket):
             if (self.mode == MODE_NOOP):
-                # If we click on a socket, start dragging an edge 
                 self.mode = MODE_EDGE_DRAG
                 self.edgeDragStart(item)
                 return
 
+        # If we click on a socket while already dragging an edge, stop dragging
         if (self.mode == MODE_EDGE_DRAG):
-            # If we click on a socket while already dragging an edge, stop dragging
             res = self.edgeDragEnd(item)
             if res: return
 
-        # If we didn't click a socket, pass the event upwards
+        # After we've run our custom logic, pass the event upwards
         super().mousePressEvent(event)
 
 
@@ -118,12 +118,13 @@ class QDMGraphicsView(QGraphicsView):
         # Get item which we release mouse button on
         item = self.getItemAtClick(event)
 
-        # Logic
+        # If LMB released while dragging an edge
         if (self.mode == MODE_EDGE_DRAG):
-            if self.distanceBetweenClickAndReleaseIsOff(event):
-                res = self.edgeDragEnd(item)
+            if self.distanceBetweenClickAndReleaseIsBigEnough(event): # Do nothing if LMB released very close to where it was pressed
+                res = self.edgeDragEnd(item)    # Edge will snap to item if it is a socket
                 if res: return
 
+        # After we've run our custom logic, pass the event upwards
         super().mouseReleaseEvent(event)
 
 
@@ -133,9 +134,10 @@ class QDMGraphicsView(QGraphicsView):
         item = self.getItemAtClick(event)
 
         if DEBUG:
-            if isinstance(item, QDMGraphicsEdge): print('RMB DEBUG:', item.edge, ' connecting sockets:',
-                                            item.edge.start_socket, '<-->', item.edge.end_socket)
-            if type(item) is QDMGraphicsSocket: print('RMB DEBUG:', item.socket, 'has edge:', item.socket.edge)
+            if isinstance(item, QDMGraphicsEdge):
+                print('RMB DEBUG:', item.edge, ' connecting sockets:', item.edge.start_socket, '<-->', item.edge.end_socket)
+            if type(item) is QDMGraphicsSocket:
+                print('RMB DEBUG:', item.socket, 'has edge:', item.socket.edge)
 
             if item is None:
                 print('SCENE:')
@@ -195,7 +197,7 @@ class QDMGraphicsView(QGraphicsView):
         return False
 
 
-    def distanceBetweenClickAndReleaseIsOff(self, event):
+    def distanceBetweenClickAndReleaseIsBigEnough(self, event):
         """ Measures if we are too far from the last LMB click scene position """
         new_lmb_release_scene_pos = self.mapToScene(event.pos())
         dist_scene = new_lmb_release_scene_pos - self.last_lmb_click_scene_pos
