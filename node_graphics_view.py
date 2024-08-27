@@ -173,6 +173,22 @@ class QDMGraphicsView(QGraphicsView):
         super().mouseReleaseEvent(event)
 
 
+    def keyPressEvent(self, event):
+        """ Runs when a keyboard key is pressed. We can use it to do certain actions for different keys. """
+        if (event.key() == Qt.Key_Delete): self.deleteSelected()
+        else:
+            super().keyPressEvent(event)
+
+
+    def deleteSelected(self):
+        """ Deletes all selected nodes and edges """
+        for item in self.grScene.selectedItems():
+            if isinstance(item, QDMGraphicsEdge):
+                item.edge.remove()
+            elif hasattr(item, 'node'):
+                item.node.remove()
+
+
     def debug_modifiers(self, event) -> str:
         """ Given an event, returns a string that says which modifier keys were being pressed """
         out = ""
