@@ -97,11 +97,12 @@ class QDMGraphicsView(QGraphicsView):
         # We store the position of last LMB click
         self.last_lmb_click_scene_pos = self.mapToScene(event.pos())
 
+        if DEBUG: print("LMB Click on", item, "MODS:", self.debug_modifiers(event))
+
         # By default, we can select multiple elements with LMB+Ctrl. We want to also be able to do it with LMB+Shift.
         # Here we detect LMB+Shift and mask it as if it were LMB+Ctrl.
-        if (hasattr(item, "node") or isinstance(item, QDMGraphicsEdge)):
+        if (hasattr(item, "node") or isinstance(item, QDMGraphicsEdge) or item is None):
             if (event.modifiers() & Qt.ShiftModifier):  # If pressed LMB + Shift
-                if DEBUG: print("LMB + Shift on", item)
                 event.ignore()
                 fakeEvent = QMouseEvent(QEvent.MouseButtonPress, event.localPos(), event.screenPos(),
                                         Qt.LeftButton, event.buttons() | Qt.LeftButton,
@@ -130,9 +131,8 @@ class QDMGraphicsView(QGraphicsView):
         item = self.getItemAtClick(event)
 
         # Just like above, when releasing LMB+Shift we fake an event to mask it as if it was LMB+Ctrl 
-        if (hasattr(item, "node") or isinstance(item, QDMGraphicsEdge)):
+        if (hasattr(item, "node") or isinstance(item, QDMGraphicsEdge) or item is None):
             if event.modifiers() & Qt.ShiftModifier:
-                if DEBUG: print("LMB Release + Shift on", item)
                 event.ignore()
                 fakeEvent = QMouseEvent(event.type(), event.localPos(), event.screenPos(),
                                         Qt.LeftButton, Qt.NoButton,
@@ -172,6 +172,14 @@ class QDMGraphicsView(QGraphicsView):
     def rightMouseButtonRelease(self, event):
         super().mouseReleaseEvent(event)
 
+
+    def debug_modifiers(self, event) -> str:
+        """ Given an event, returns a string that says which modifier keys were being pressed """
+        out = ""
+        if event.modifiers() & Qt.ShiftModifier: out += "SHIFT "
+        if event.modifiers() & Qt.ControlModifier: out += "CTRL "
+        if event.modifiers() & Qt.AltModifier: out += "ALT "
+        return out
 
 
     def getItemAtClick(self, event):
