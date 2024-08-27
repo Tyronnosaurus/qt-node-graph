@@ -14,7 +14,7 @@ class Node():
 
         self.title = title
 
-        self.content = QDMNodeContentWidget()
+        self.content = QDMNodeContentWidget(self)
         self.grNode = QDMGraphicsNode(self)
 
         self.scene.addNode(self)

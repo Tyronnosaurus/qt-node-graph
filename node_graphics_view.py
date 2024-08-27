@@ -29,6 +29,7 @@ class QDMGraphicsView(QGraphicsView):
         self.setScene(self.grScene)
 
         self.mode = MODE_NOOP
+        self.editingFlag = False # Flag to indicate that we're editing text inside the node
 
         self.zoom = 10  # Current zoom
         self.zoomInFactor = 1.25
@@ -175,7 +176,13 @@ class QDMGraphicsView(QGraphicsView):
 
     def keyPressEvent(self, event):
         """ Runs when a keyboard key is pressed. We can use it to do certain actions for different keys. """
-        if (event.key() == Qt.Key_Delete): self.deleteSelected()
+        
+        # If user presses Del key (and we're note editing text within the node), delete the node
+        if (event.key() == Qt.Key_Delete):
+            if not self.editingFlag:
+                self.deleteSelected()
+            else:
+                super().keyPressEvent(event)
         else:
             super().keyPressEvent(event)
 
