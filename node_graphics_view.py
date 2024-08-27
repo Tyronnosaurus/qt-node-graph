@@ -97,6 +97,17 @@ class QDMGraphicsView(QGraphicsView):
         # We store the position of last LMB click
         self.last_lmb_click_scene_pos = self.mapToScene(event.pos())
 
+        # By default, we can select multiple elements with LMB+Ctrl. We want to also be able to do it with LMB+Shift.
+        # Here we detect LMB+Shift and mask it as if it were LMB+Ctrl.
+        if (hasattr(item, "node") or isinstance(item, QDMGraphicsEdge)):
+            if (event.modifiers() & Qt.ShiftModifier):  # If pressed LMB + Shift
+                if DEBUG: print("LMB + Shift on", item)
+                event.ignore()
+                fakeEvent = QMouseEvent(QEvent.MouseButtonPress, event.localPos(), event.screenPos(),
+                                        Qt.LeftButton, event.buttons() | Qt.LeftButton,
+                                        event.modifiers() | Qt.ControlModifier)
+                super().mousePressEvent(fakeEvent)
+                return
 
         # If we click on a socket, start dragging an edge 
         if (type(item) is QDMGraphicsSocket):
@@ -117,6 +128,17 @@ class QDMGraphicsView(QGraphicsView):
     def leftMouseButtonRelease(self, event):
         # Get item which we release mouse button on
         item = self.getItemAtClick(event)
+
+        # Just like above, when releasing LMB+Shift we fake an event to mask it as if it was LMB+Ctrl 
+        if (hasattr(item, "node") or isinstance(item, QDMGraphicsEdge)):
+            if event.modifiers() & Qt.ShiftModifier:
+                if DEBUG: print("LMB Release + Shift on", item)
+                event.ignore()
+                fakeEvent = QMouseEvent(event.type(), event.localPos(), event.screenPos(),
+                                        Qt.LeftButton, Qt.NoButton,
+                                        event.modifiers() | Qt.ControlModifier)
+                super().mouseReleaseEvent(fakeEvent)
+                return
 
         # If LMB released while dragging an edge
         if (self.mode == MODE_EDGE_DRAG):

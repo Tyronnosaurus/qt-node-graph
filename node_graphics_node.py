@@ -74,6 +74,7 @@ class QDMGraphicsNode(QGraphicsItem):
 
     def initTitle(self):
         self.title_item = QGraphicsTextItem(self)
+        # self.title_item.node = self.node  # Neede to be able to select the node when clicking on the title
         self.title_item.setDefaultTextColor(self._title_color)
         self.title_item.setFont(self._title_font)
         self.title_item.setPos(self._padding, 0)
