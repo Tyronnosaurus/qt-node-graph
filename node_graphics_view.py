@@ -233,6 +233,16 @@ class QDMGraphicsView(QGraphicsView):
                     edge.remove()
 
 
+    def cutIntersectingEdges(self):
+        for ix in range(len(self.cutline.line_points) - 1):
+            p1 = self.cutline.line_points[ix]
+            p2 = self.cutline.line_points[ix + 1]
+
+            for edge in self.grScene.scene.edges:
+                if edge.grEdge.intersectsWith(p1, p2):
+                    edge.remove()
+
+
     def deleteSelected(self):
         """ Deletes all selected nodes and edges """
         for item in self.grScene.selectedItems():
