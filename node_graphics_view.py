@@ -1,14 +1,16 @@
-from PySide6.QtWidgets import QGraphicsView
+from PySide6.QtWidgets import QGraphicsView, QApplication
 from PySide6.QtGui import QPainter, QMouseEvent
 from PySide6.QtCore import Qt, QEvent
 
 from node_graphics_socket import QDMGraphicsSocket
 from node_graphics_edge import QDMGraphicsEdge
 from node_edge import Edge, EDGE_TYPE_BEZIER
+from node_graphics_cutline import QDMCutLine
 
 
 MODE_NOOP = 1
 MODE_EDGE_DRAG = 2
+MODE_EDGE_CUT = 3
 
 EDGE_DRAG_START_THRESHOLD = 15
 
@@ -31,10 +33,14 @@ class QDMGraphicsView(QGraphicsView):
         self.mode = MODE_NOOP
         self.editingFlag = False # Flag to indicate that we're editing text inside the node
 
+        # Zoom
         self.zoom = 10  # Current zoom
         self.zoomInFactor = 1.25
         self.zoomRange = [0, 20]    # To limit how many times we can scroll up or down
 
+        # Cutline
+        self.cutline = QDMCutLine()
+        self.grScene.addItem(self.cutline)
 
 
     def initUI(self):
@@ -63,10 +69,21 @@ class QDMGraphicsView(QGraphicsView):
 
 
     def mouseMoveEvent(self, event):
+
+        # If we're dragging the mouse (because we had already clicked LMB),
+        # keep updating the edge's endpoint to wherever the mouse moves
         if (self.mode == MODE_EDGE_DRAG):
             pos = self.mapToScene(event.pos())
             self.dragEdge.grEdge.setDestination(pos.x(), pos.y())
             self.dragEdge.grEdge.update()
+        
+        # If we're currently making a cutline (with Ctrl+LMB), keep appending all the points
+        # the mouse moves through to a list (since the line is irregular and can't be constructed
+        # from just a start and an end).
+        if (self.mode == MODE_EDGE_CUT):
+            pos = self.mapToScene(event.pos())
+            self.cutline.line_points.append(pos)
+            self.cutline.update()
 
         super().mouseMoveEvent(event)
 
@@ -123,6 +140,16 @@ class QDMGraphicsView(QGraphicsView):
             res = self.edgeDragEnd(item)
             if res: return
 
+        if item is None:
+            if (event.modifiers() & Qt.ControlModifier):
+                self.mode = MODE_EDGE_CUT
+                print("Started cutline")
+                fakeEvent = QMouseEvent(QEvent.MouseButtonRelease, event.localPos(), event.screenPos(),
+                                        Qt.LeftButton, Qt.NoButton, event.modifiers())
+                super().mouseReleaseEvent(fakeEvent)
+                QApplication.setOverrideCursor(Qt.CrossCursor)
+                return
+
         # After we've run our custom logic, pass the event upwards
         super().mousePressEvent(event)
 
@@ -146,6 +173,15 @@ class QDMGraphicsView(QGraphicsView):
             if self.distanceBetweenClickAndReleaseIsBigEnough(event): # Do nothing if LMB released very close to where it was pressed
                 res = self.edgeDragEnd(item)    # Edge will snap to item if it is a socket
                 if res: return
+
+        if (self.mode == MODE_EDGE_CUT):
+            self.cutIntersectingEdges()
+            self.cutline.line_points = []
+            self.cutline.update()
+            QApplication.setOverrideCursor(Qt.ArrowCursor)
+            self.mode = MODE_NOOP
+            print("Finished cutline")
+            return
 
         # After we've run our custom logic, pass the event upwards
         super().mouseReleaseEvent(event)
@@ -185,6 +221,16 @@ class QDMGraphicsView(QGraphicsView):
                 super().keyPressEvent(event)
         else:
             super().keyPressEvent(event)
+
+
+    def cutIntersectingEdges(self):
+        for ix in range(len(self.cutline.line_points) - 1):
+            p1 = self.cutline.line_points[ix]
+            p2 = self.cutline.line_points[ix + 1]
+
+            for edge in self.grScene.scene.edges:
+                if edge.grEdge.intersectsWith(p1, p2):
+                    edge.remove()
 
 
     def deleteSelected(self):
