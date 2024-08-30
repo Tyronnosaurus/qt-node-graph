@@ -77,13 +77,12 @@ class QDMGraphicsView(QGraphicsView):
             self.dragEdge.grEdge.setDestination(pos.x(), pos.y())
             self.dragEdge.grEdge.update()
         
-        # If we're currently making a cutline (with Ctrl+LMB), keep appending all the points
-        # the mouse moves through to a list (since the line is irregular and can't be constructed
-        # from just a start and an end).
+        # If we're currently making a cutline (with Ctrl+LMB), keep appending all the points the mouse moves through to a list
+        # (since the line is irregular and can't be constructed from just a start and an end).
         if (self.mode == MODE_EDGE_CUT):
             pos = self.mapToScene(event.pos())
             self.cutline.line_points.append(pos)
-            self.cutline.update()
+            self.grScene.update()
 
         super().mouseMoveEvent(event)
 
@@ -143,7 +142,6 @@ class QDMGraphicsView(QGraphicsView):
         if item is None:
             if (event.modifiers() & Qt.ControlModifier):
                 self.mode = MODE_EDGE_CUT
-                print("Started cutline")
                 fakeEvent = QMouseEvent(QEvent.MouseButtonRelease, event.localPos(), event.screenPos(),
                                         Qt.LeftButton, Qt.NoButton, event.modifiers())
                 super().mouseReleaseEvent(fakeEvent)
@@ -174,13 +172,13 @@ class QDMGraphicsView(QGraphicsView):
                 res = self.edgeDragEnd(item)    # Edge will snap to item if it is a socket
                 if res: return
 
+        #If LMB released while drawing a cutline
         if (self.mode == MODE_EDGE_CUT):
-            self.cutIntersectingEdges()
-            self.cutline.line_points = []
-            self.cutline.update()
-            QApplication.setOverrideCursor(Qt.ArrowCursor)
+            self.cutIntersectingEdges()     # Delete the intersected edges
+            self.cutline.line_points = []   # Forget all the points that make up the cutline
+            self.grScene.update()
+            QApplication.setOverrideCursor(Qt.ArrowCursor)  # Revert mouse cursor back to normal
             self.mode = MODE_NOOP
-            print("Finished cutline")
             return
 
         # After we've run our custom logic, pass the event upwards
@@ -224,16 +222,7 @@ class QDMGraphicsView(QGraphicsView):
 
 
     def cutIntersectingEdges(self):
-        for ix in range(len(self.cutline.line_points) - 1):
-            p1 = self.cutline.line_points[ix]
-            p2 = self.cutline.line_points[ix + 1]
-
-            for edge in self.grScene.scene.edges:
-                if edge.grEdge.intersectsWith(p1, p2):
-                    edge.remove()
-
-
-    def cutIntersectingEdges(self):
+        """ Calculates intersections between cutline and edges, and deletes intersected edges """
         for ix in range(len(self.cutline.line_points) - 1):
             p1 = self.cutline.line_points[ix]
             p2 = self.cutline.line_points[ix + 1]
