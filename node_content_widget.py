@@ -1,7 +1,9 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTextEdit
+from collections import OrderedDict
+from node_serializable import Serializable
 
 
-class QDMNodeContentWidget(QWidget):
+class QDMNodeContentWidget(QWidget, Serializable):
     """ Widget that goes inside the node and contains elements such as labels, inputs... """
     
     def __init__(self, node, parent=None):
@@ -23,6 +25,17 @@ class QDMNodeContentWidget(QWidget):
 
     def setEditingFlag(self, value):
         self.node.scene.grScene.views()[0].editingFlag = value
+
+
+    def serialize(self):
+        """ Returns the node content's properties as a dict for easy serialization """
+        return OrderedDict([
+
+        ])
+
+
+    def deserialize(self, data, hashmap={}):
+        return False
 
 
 

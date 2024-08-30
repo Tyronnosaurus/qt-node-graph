@@ -217,6 +217,17 @@ class QDMGraphicsView(QGraphicsView):
                 self.deleteSelected()
             else:
                 super().keyPressEvent(event)
+
+        # User presses S -> Serialize and save scene
+        elif (event.key() == Qt.Key_S and event.modifiers() & Qt.ControlModifier):
+            self.grScene.scene.saveToFile("graph.json.txt")
+            print("Saved")
+
+        # User presses L -> Deserialize and load scene
+        elif (event.key() == Qt.Key_L and event.modifiers() & Qt.ControlModifier):
+            self.grScene.scene.loadFromFile("graph.json.txt")
+            print("Loaded")
+            
         else:
             super().keyPressEvent(event)
 
