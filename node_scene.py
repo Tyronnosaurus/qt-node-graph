@@ -2,6 +2,8 @@ from node_graphics_scene import QDMGraphicsScene
 import json
 from collections import OrderedDict
 from node_serializable import Serializable
+from node_node import Node
+from node_edge import Edge
 
 
 class Scene(Serializable):
@@ -37,16 +39,24 @@ class Scene(Serializable):
         self.edges.remove(edge)
 
 
+    def clear(self):
+        """ Delete all nodes, one by one, with their remove() method so that they also delete any connected edge """
+        while len(self.nodes) > 0:
+            self.nodes[0].remove()
+
+
     def saveToFile(self, filename):
+        """ Save scene data in a json file """
         with open(filename, "w") as file:
             file.write( json.dumps( self.serialize(), indent=4 ) )
-        print("saving to", filename, "was successfull.")
+        print("Saving to", filename, "was successfull.")
 
 
     def loadFromFile(self, filename):
+        """ Reads scene data stored in a json file, and deserializes it to recreate all the elements in the scene """
         with open(filename, "r") as file:
             raw_data = file.read()
-            data = json.loads(raw_data, encoding='utf-8')
+            data = json.loads(raw_data)
             self.deserialize(data)
 
 
@@ -61,6 +71,16 @@ class Scene(Serializable):
         ])
 
 
-    def deserialize(self, data, hashmap={}):
-        print("deserializating data", data)
-        return False
+    def deserialize(self, data):
+        """ Given json-serialized data about the scene and its contents, deserialize it and load it """
+        print("Deserializing data")
+        self.clear()
+        hashmap = {}
+
+        # Create nodes
+        for node_data in data['nodes']:
+            Node(self).deserialize(node_data, hashmap)
+
+        # Create edges
+        for edge_data in data['edges']:
+            Edge(self).deserialize(edge_data, hashmap)

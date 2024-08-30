@@ -14,9 +14,8 @@ class Node(Serializable):
             
         super().__init__()
 
+        self._title = title
         self.scene = scene
-
-        self.title = title
 
         self.content = QDMNodeContentWidget(self)
         self.grNode = QDMGraphicsNode(self)
@@ -25,7 +24,6 @@ class Node(Serializable):
         self.scene.grScene.addItem(self.grNode)
 
         self.socket_spacing = 22
-
 
         # Create sockets for inputs and outputs
         self.inputs = []
@@ -54,6 +52,16 @@ class Node(Serializable):
     
     def setPos(self, x, y):
         self.grNode.setPos(x, y)
+
+
+    @property
+    def title(self):
+        return self._title
+
+    @title.setter
+    def title(self, value):
+        self._title = value
+        self.grNode.title = self._title
 
 
     def getSocketPosition(self, index, position):
@@ -112,4 +120,26 @@ class Node(Serializable):
 
 
     def deserialize(self, data, hashmap={}):
-        return False
+        """ Given json-serialized data about the node, deserialize it and load it """
+        self.id = data['id']
+
+        hashmap[data['id']] = self
+
+        self.setPos(data['pos_x'], data['pos_y'])
+        self.title = data['title']
+
+        data['inputs'].sort(key=lambda socket: socket['index'] + socket['position'] * 10000 )
+        data['outputs'].sort(key=lambda socket: socket['index'] + socket['position'] * 10000 )
+
+        # Deserialize data about the input and output sockets, and include it in the node data
+        self.inputs = []
+        for socket_data in data['inputs']:
+            new_socket = Socket(node=self, index=socket_data['index'], position=socket_data['position'], socket_type=socket_data['socket_type'])
+            new_socket.deserialize(socket_data, hashmap)
+            self.inputs.append(new_socket)
+
+        self.outputs = []
+        for socket_data in data['outputs']:
+            new_socket = Socket(node=self, index=socket_data['index'], position=socket_data['position'], socket_type=socket_data['socket_type'])
+            new_socket.deserialize(socket_data, hashmap)
+            self.outputs.append(new_socket)
