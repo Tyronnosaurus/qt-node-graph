@@ -114,7 +114,7 @@ class QDMGraphicsView(QGraphicsView):
         # We store the position of last LMB click
         self.last_lmb_click_scene_pos = self.mapToScene(event.pos())
 
-        if DEBUG: print("LMB Click on", item, "MODS:", self.debug_modifiers(event))
+        # if DEBUG: print("LMB Click on", item, "MODS:", self.debug_modifiers(event))
 
         # By default, we can select multiple elements with LMB+Ctrl. We want to also be able to do it with LMB+Shift.
         # Here we detect LMB+Shift and mask it as if it were LMB+Ctrl.
@@ -227,7 +227,23 @@ class QDMGraphicsView(QGraphicsView):
         elif (event.key() == Qt.Key_L and event.modifiers() & Qt.ControlModifier):
             self.grScene.scene.loadFromFile("graph.json.txt")
             print("Loaded")
-            
+        
+        elif (event.key() == Qt.Key_1):
+            self.grScene.scene.history.storeHistory("Item A")
+        elif (event.key() == Qt.Key_2):
+            self.grScene.scene.history.storeHistory("Item B")
+        elif (event.key() == Qt.Key_3):
+            self.grScene.scene.history.storeHistory("Item C")
+        elif (event.key() == Qt.Key_4):
+            self.grScene.scene.history.undo()
+        elif (event.key() == Qt.Key_5):
+            self.grScene.scene.history.redo()
+
+        elif (event.key() == Qt.Key_H):
+            stack_len = len(self.grScene.scene.history.history_stack)
+            print("HISTORY:     len", stack_len, " | current_step", self.grScene.scene.history.history_current_step)
+            print(self.grScene.scene.history.history_stack)
+
         else:
             super().keyPressEvent(event)
 
