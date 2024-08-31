@@ -7,7 +7,7 @@ from node_edge import Edge, EDGE_TYPE_BEZIER
 from node_graphics_view import QDMGraphicsView
 
 
-class NodeEditorWnd(QWidget):
+class NodeEditorWidget(QWidget):
     """ Main window of the application """
 
     def __init__(self, parent=None):

@@ -1,7 +1,7 @@
 from node_graphics_edge import QDMGraphicsEdge
 
 
-DEBUG = True
+DEBUG = False
 
 
 class SceneHistory():
@@ -21,7 +21,7 @@ class SceneHistory():
             self.history_current_step -= 1
             self.restoreHistory()
         else:
-            print("Nothing to undo")
+            if DEBUG: print("Nothing to undo")
 
 
     def redo(self):
@@ -30,7 +30,7 @@ class SceneHistory():
             self.history_current_step += 1
             self.restoreHistory()
         else:
-            print("Nothing to redo")
+            if DEBUG: print("Nothing to redo")
 
 
     def restoreHistory(self):
