@@ -180,6 +180,10 @@ class QDMGraphicsView(QGraphicsView):
             QApplication.setOverrideCursor(Qt.ArrowCursor)  # Revert mouse cursor back to normal
             self.mode = MODE_NOOP
             return
+        
+        # Save "Selection changed" action to undo/redo history
+        if (self.dragMode() == QGraphicsView.RubberBandDrag):
+            self.grScene.scene.history.storeHistory("Selection changed")
 
         # After we've run our custom logic, pass the event upwards
         super().mouseReleaseEvent(event)
@@ -228,21 +232,20 @@ class QDMGraphicsView(QGraphicsView):
             self.grScene.scene.loadFromFile("graph.json.txt")
             print("Loaded")
         
-        elif (event.key() == Qt.Key_1):
-            self.grScene.scene.history.storeHistory("Item A")
-        elif (event.key() == Qt.Key_2):
-            self.grScene.scene.history.storeHistory("Item B")
-        elif (event.key() == Qt.Key_3):
-            self.grScene.scene.history.storeHistory("Item C")
-        elif (event.key() == Qt.Key_4):
+        # Ctrl + Z -> Undo
+        elif (event.key() == Qt.Key_Z and event.modifiers() & Qt.ControlModifier and not event.modifiers() & Qt.ShiftModifier):
             self.grScene.scene.history.undo()
-        elif (event.key() == Qt.Key_5):
+
+        # Ctrl + Shift + Z -> Redo
+        elif (event.key() == Qt.Key_Z and event.modifiers() & Qt.ControlModifier and event.modifiers() & Qt.ShiftModifier):
             self.grScene.scene.history.redo()
 
+        # H -> Print history stack
         elif (event.key() == Qt.Key_H):
-            stack_len = len(self.grScene.scene.history.history_stack)
-            print("HISTORY:     len", stack_len, " | current_step", self.grScene.scene.history.history_current_step)
-            print(self.grScene.scene.history.history_stack)
+            print("HISTORY:")
+            for i,item in enumerate(self.grScene.scene.history.history_stack):
+                bullet = ">" if (i == self.grScene.scene.history.history_current_step) else "#"
+                print(bullet, i, "--", item['desc'])
 
         else:
             super().keyPressEvent(event)
@@ -257,6 +260,8 @@ class QDMGraphicsView(QGraphicsView):
             for edge in self.grScene.scene.edges:
                 if edge.grEdge.intersectsWith(p1, p2):
                     edge.remove()
+            
+        self.grScene.scene.history.storeHistory("Delete cut edges")
 
 
     def deleteSelected(self):
@@ -266,6 +271,8 @@ class QDMGraphicsView(QGraphicsView):
                 item.edge.remove()
             elif hasattr(item, 'node'):
                 item.node.remove()
+        
+        self.grScene.scene.history.storeHistory("Delete selected")
 
 
     def debug_modifiers(self, event) -> str:
@@ -310,6 +317,10 @@ class QDMGraphicsView(QGraphicsView):
                 self.dragEdge.end_socket.setConnectedEdge(self.dragEdge)
                 if DEBUG: print('View::edgeDragEnd ~  reassigned start & end sockets to drag edge')
                 self.dragEdge.updatePositions()
+
+                # Save action in history for undo/redo
+                self.grScene.scene.history.storeHistory("Created new edge by dragging")
+                
                 return True
 
         if DEBUG: print('View::edgeDragEnd ~ End dragging edge')

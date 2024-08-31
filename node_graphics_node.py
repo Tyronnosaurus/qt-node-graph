@@ -38,6 +38,8 @@ class QDMGraphicsNode(QGraphicsItem):
         self.initContent()
 
         self.initUI()
+        
+        self.wasMoved = False
 
 
     def mouseMoveEvent(self, event):
@@ -49,6 +51,17 @@ class QDMGraphicsNode(QGraphicsItem):
         for node in self.scene().scene.nodes:
             if node.grNode.isSelected():
                 node.updateConnectedEdges()
+
+        self.wasMoved = True
+
+
+    def mouseReleaseEvent(self, event):
+        """ Overrides parent's method. Called whenever the node stops being dragged. """
+        super().mouseReleaseEvent(event)
+
+        if (self.wasMoved):
+            self.wasMoved = False
+            self.node.scene.history.storeHistory("Node moved")
 
 
     @property
