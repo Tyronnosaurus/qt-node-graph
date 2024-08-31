@@ -143,7 +143,7 @@ class QDMGraphicsView(QGraphicsView):
             if (event.modifiers() & Qt.ControlModifier):
                 self.mode = MODE_EDGE_CUT
                 fakeEvent = QMouseEvent(QEvent.MouseButtonRelease, event.localPos(), event.screenPos(),
-                                        Qt.LeftButton, Qt.NoButton, event.modifiers())
+                                        Qt.MouseButton.LeftButton, Qt.MouseButton.NoButton, event.modifiers())
                 super().mouseReleaseEvent(fakeEvent)
                 QApplication.setOverrideCursor(Qt.CrossCursor)
                 return
@@ -161,7 +161,7 @@ class QDMGraphicsView(QGraphicsView):
             if event.modifiers() & Qt.ShiftModifier:
                 event.ignore()
                 fakeEvent = QMouseEvent(event.type(), event.localPos(), event.screenPos(),
-                                        Qt.LeftButton, Qt.NoButton,
+                                        Qt.MouseButton.LeftButton, Qt.MouseButton.NoButton,
                                         event.modifiers() | Qt.ControlModifier)
                 super().mouseReleaseEvent(fakeEvent)
                 return
@@ -172,7 +172,7 @@ class QDMGraphicsView(QGraphicsView):
                 res = self.edgeDragEnd(item)    # Edge will snap to item if it is a socket
                 if res: return
 
-        #If LMB released while drawing a cutline
+        # If LMB released while drawing a cutline
         if (self.mode == MODE_EDGE_CUT):
             self.cutIntersectingEdges()     # Delete the intersected edges
             self.cutline.line_points = []   # Forget all the points that make up the cutline

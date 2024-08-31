@@ -13,18 +13,21 @@ class SceneHistory():
 
 
     def undo(self):
-        if DEBUG: print("UNDO")
-
         if (self.history_current_step > 0):
+            if DEBUG: print("UNDO")
             self.history_current_step -= 1
             self.restoreHistory()
+        else:
+            print("Nothing to undo")
 
 
     def redo(self):
-        if DEBUG: print("REDO")
         if (self.history_current_step + 1 < len(self.history_stack)):
+            if DEBUG: print("REDO")
             self.history_current_step += 1
             self.restoreHistory()
+        else:
+            print("Nothing to redo")
 
 
     def restoreHistory(self):
