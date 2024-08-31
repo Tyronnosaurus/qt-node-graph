@@ -59,8 +59,8 @@ class Socket(Serializable):
         ])
 
 
-    def deserialize(self, data, hashmap={}):
+    def deserialize(self, data, hashmap={}, restore_id=True):
         """ Given json-serialized data about the socket, deserialize it and load it """
-        self.id = data['id']
+        if restore_id: self.id = data['id']
         hashmap[data['id']] = self
 

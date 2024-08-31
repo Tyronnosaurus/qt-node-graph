@@ -119,9 +119,9 @@ class Node(Serializable):
         ])
 
 
-    def deserialize(self, data, hashmap={}):
+    def deserialize(self, data, hashmap={}, restore_id=True):
         """ Given json-serialized data about the node, deserialize it and load it """
-        self.id = data['id']
+        if restore_id: self.id = data['id']
 
         hashmap[data['id']] = self
 
@@ -135,11 +135,11 @@ class Node(Serializable):
         self.inputs = []
         for socket_data in data['inputs']:
             new_socket = Socket(node=self, index=socket_data['index'], position=socket_data['position'], socket_type=socket_data['socket_type'])
-            new_socket.deserialize(socket_data, hashmap)
+            new_socket.deserialize(socket_data, hashmap, restore_id)
             self.inputs.append(new_socket)
 
         self.outputs = []
         for socket_data in data['outputs']:
             new_socket = Socket(node=self, index=socket_data['index'], position=socket_data['position'], socket_type=socket_data['socket_type'])
-            new_socket.deserialize(socket_data, hashmap)
+            new_socket.deserialize(socket_data, hashmap, restore_id)
             self.outputs.append(new_socket)

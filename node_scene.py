@@ -5,7 +5,7 @@ from node_serializable import Serializable
 from node_node import Node
 from node_edge import Edge
 from node_scene_history import SceneHistory
-
+from node_scene_clipboard import SceneClipboard
 
 
 class Scene(Serializable):
@@ -22,6 +22,7 @@ class Scene(Serializable):
 
         self.initUI()
         self.history = SceneHistory(self)
+        self.clipboard = SceneClipboard(self)
 
 
     def initUI(self):
@@ -74,18 +75,18 @@ class Scene(Serializable):
         ])
 
 
-    def deserialize(self, data):
+    def deserialize(self, data, restore_id=True):
         """ Given json-serialized data about the scene and its contents, deserialize it and load it """
         print("Deserializing data")
         self.clear()
         hashmap = {}
 
-        self.id = data['id']
+        if restore_id: self.id = data['id']
 
         # Create nodes
         for node_data in data['nodes']:
-            Node(self).deserialize(node_data, hashmap)
+            Node(self).deserialize(node_data, hashmap, restore_id)
 
         # Create edges
         for edge_data in data['edges']:
-            Edge(self).deserialize(edge_data, hashmap)
+            Edge(self).deserialize(edge_data, hashmap, restore_id)
