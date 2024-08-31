@@ -45,6 +45,14 @@ class QDMGraphicsEdge(QGraphicsPathItem):
         """ Sets the coordinates of the end point """
         self.posDestination = [x, y]
 
+    
+    def boundingRect(self):
+        return self.shape().boundingRect()
+
+    
+    def shape(self):
+        return self.calcPath()
+
 
     def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         """ Overrides QGraphicsPathItem.paint(). Called whenever the edge is redrawn. """
