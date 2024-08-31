@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QGraphicsView, QApplication
 from PySide6.QtGui import QPainter, QMouseEvent
-from PySide6.QtCore import Qt, QEvent
+from PySide6.QtCore import Qt, QEvent, Signal
 
 from node_graphics_socket import QDMGraphicsSocket
 from node_graphics_edge import QDMGraphicsEdge
@@ -18,9 +18,10 @@ DEBUG = True
 
 
 class QDMGraphicsView(QGraphicsView):
-    """
-    Represents the view of the visible portion of a scene.
-    """
+    """ Represents the view of the visible portion of a scene """
+
+    scenePosChanged = Signal(int, int)
+
 
     def __init__(self, grScene, parent=None):
         super().__init__(parent)
@@ -84,6 +85,13 @@ class QDMGraphicsView(QGraphicsView):
             self.cutline.line_points.append(pos)
             self.grScene.update()
 
+        self.last_scene_mouse_position = self.mapToScene(event.pos())
+
+        self.scenePosChanged.emit(
+            int(self.last_scene_mouse_position.x()),
+            int(self.last_scene_mouse_position.y())
+        )
+
         super().mouseMoveEvent(event)
 
     
@@ -104,7 +112,6 @@ class QDMGraphicsView(QGraphicsView):
         fakeEvent = QMouseEvent(event.type(), event.localPos(), event.screenPos(), Qt.MouseButton.LeftButton, event.buttons(), event.modifiers())
         super().mouseReleaseEvent(fakeEvent)
         self.setDragMode(QGraphicsView.RubberBandDrag)
-
 
 
     def leftMouseButtonPress(self, event):
@@ -213,35 +220,13 @@ class QDMGraphicsView(QGraphicsView):
 
 
     def keyPressEvent(self, event):
-        """ Runs when a keyboard key is pressed. We can use it to do certain actions for different keys. """
-        
-        # If user presses Del key (and we're note editing text within the node), delete the node
-        if (event.key() == Qt.Key_Delete):
-            if not self.editingFlag:
-                self.deleteSelected()
-            else:
-                super().keyPressEvent(event)
-
-        # User presses S -> Serialize and save scene
-        elif (event.key() == Qt.Key_S and event.modifiers() & Qt.ControlModifier):
-            self.grScene.scene.saveToFile("graph.json.txt")
-            print("Saved")
-
-        # User presses L -> Deserialize and load scene
-        elif (event.key() == Qt.Key_L and event.modifiers() & Qt.ControlModifier):
-            self.grScene.scene.loadFromFile("graph.json.txt")
-            print("Loaded")
-        
-        # Ctrl + Z -> Undo
-        elif (event.key() == Qt.Key_Z and event.modifiers() & Qt.ControlModifier and not event.modifiers() & Qt.ShiftModifier):
-            self.grScene.scene.history.undo()
-
-        # Ctrl + Shift + Z -> Redo
-        elif (event.key() == Qt.Key_Z and event.modifiers() & Qt.ControlModifier and event.modifiers() & Qt.ShiftModifier):
-            self.grScene.scene.history.redo()
+        """
+        Runs when a keyboard key is pressed. We can use it to do certain actions for different keys.
+        Note that some shortcuts are implemented through actions in the menu bar instead of here.
+        """
 
         # H -> Print history stack
-        elif (event.key() == Qt.Key_H):
+        if (event.key() == Qt.Key_H):
             print("HISTORY:")
             for i,item in enumerate(self.grScene.scene.history.history_stack):
                 bullet = ">" if (i == self.grScene.scene.history.history_current_step) else "#"

@@ -20,7 +20,6 @@ class NodeEditorWidget(QWidget):
 
 
     def initUI(self):
-        self.setGeometry(200, 200, 800, 600)
 
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(0,0,0,0)
@@ -30,13 +29,9 @@ class NodeEditorWidget(QWidget):
         self.scene = Scene()
         self.addNodes()
 
-
         # Create graphics view to show the scene
         self.view = QDMGraphicsView(self.scene.grScene, self)
         self.layout.addWidget(self.view)
-
-        self.setWindowTitle("Node Editor")
-        self.show()
 
 
     def addNodes(self):
