@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QGraphicsItem
-from PySide6.QtGui import QPen, QPainter, QPolygonF
-from PySide6.QtCore import Qt, QRectF, QPoint, QPointF
+from PySide6.QtGui import QPen, QPainter, QPolygonF, QPainterPath
+from PySide6.QtCore import Qt, QPointF
 
 
 class QDMCutLine(QGraphicsItem):
@@ -15,11 +15,25 @@ class QDMCutLine(QGraphicsItem):
         self._pen.setWidthF(2.0)
         self._pen.setDashPattern([3, 3]) # Line is dashed
 
-        self.setZValue(10) # Draw on top of edges and any other elements with Z=1 or less
+        self.setZValue(2) # Draw on top of edges and any other elements with Z=1 or less
 
 
-    def boundingRect(self):
-        return QRectF(0, 0, 1, 1)
+    def boundingRect(self):         
+        return self.shape().boundingRect()
+
+
+    def shape(self):
+        poly = QPolygonF(self.line_points)
+
+        if (len(self.line_points) > 1):
+            path = QPainterPath(self.line_points[0])
+            for pt in self.line_points[1:]:
+                path.lineTo(pt)
+        else:
+            path = QPainterPath(QPointF(0,0))
+            path.lineTo(QPointF(1,1))
+
+        return path
 
 
     def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
