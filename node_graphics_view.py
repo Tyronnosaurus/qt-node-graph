@@ -246,7 +246,7 @@ class QDMGraphicsView(QGraphicsView):
                 if edge.grEdge.intersectsWith(p1, p2):
                     edge.remove()
             
-        self.grScene.scene.history.storeHistory("Delete cut edges")
+        self.grScene.scene.history.storeHistory("Delete cut edges", setModified=True)
 
 
     def deleteSelected(self):
@@ -257,7 +257,7 @@ class QDMGraphicsView(QGraphicsView):
             elif hasattr(item, 'node'):
                 item.node.remove()
         
-        self.grScene.scene.history.storeHistory("Delete selected")
+        self.grScene.scene.history.storeHistory("Delete selected", setModified=True)
 
 
     def debug_modifiers(self, event) -> str:
@@ -304,7 +304,7 @@ class QDMGraphicsView(QGraphicsView):
                 self.dragEdge.updatePositions()
 
                 # Save action in history for undo/redo
-                self.grScene.scene.history.storeHistory("Created new edge by dragging")
+                self.grScene.scene.history.storeHistory("Created new edge by dragging", setModified=True)
                 
                 return True
 

@@ -1,7 +1,7 @@
 import os
 import json
 
-from PySide6.QtWidgets import QMainWindow, QLabel, QFileDialog, QApplication
+from PySide6.QtWidgets import QMainWindow, QLabel, QFileDialog, QApplication, QMessageBox
 from PySide6.QtGui import QAction
 from node_editor_widget import NodeEditorWidget
 
@@ -15,9 +15,9 @@ class NodeEditorWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.initUI()
-
         self.filename = None # Holds name of the loaded file, for when we want to save it again
+
+        self.initUI()
 
 
     def createAction(self, name, shortcut, tooltip, callback):
@@ -54,6 +54,7 @@ class NodeEditorWindow(QMainWindow):
 
         # Create node editor widget
         nodeeditor = NodeEditorWidget(self)
+        nodeeditor.scene.addHasBeenModifiedListener(self.changeTitle)
         self.setCentralWidget(nodeeditor)
 
         # Status bar
@@ -64,8 +65,57 @@ class NodeEditorWindow(QMainWindow):
 
         # Set window properties
         self.setGeometry(200, 200, 800, 600)
-        self.setWindowTitle("Node Editor")
+        self.changeTitle()
         self.show()
+
+
+    def changeTitle(self):
+        """ Updates application window's title """
+        title = "Node Editor - "
+
+        # If scene loaded from saved file, show name of file; otherwise show "New"
+        title += "New" if (self.filename is None) else os.path.basename(self.filename)
+
+        # Add asterisk if scene has been modified since last save
+        if (self.centralWidget().scene.has_been_modified): title += "*"
+
+        self.setWindowTitle(title)
+
+
+    def closeEvent(self, event):
+        """
+        Overrides parent's method, runs when window closes.
+        Shows popup to save (or discard) current scene if it has unsaved changes.
+        If user clicks cancel, the window does not close.
+        """
+        if (self.maybeSave()):
+            event.accept()
+        else:
+            event.ignore()
+
+
+    def isModified(self):
+        """ Returns true if scene has been modified since last save """
+        return self.centralWidget().scene.has_been_modified
+
+
+    def maybeSave(self):
+        """
+        Checks if scene has been modified since last save, and if so offers to save it.
+        Returns true if user successfuly saves it to disk.
+        """
+        if (not self.isModified()): return True
+
+        res = QMessageBox.warning(self, "About to lose your work?",
+                "The document has been modified.\n Do you want to save your changes?",
+                QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
+
+        if (res == QMessageBox.Save):
+            return self.onFileSave()
+        elif (res == QMessageBox.Cancel):
+            return False
+
+        return True
 
 
     def onScenePosChanged(self, x, y):
@@ -73,14 +123,22 @@ class NodeEditorWindow(QMainWindow):
 
 
     def onFileNew(self):
-        self.centralWidget().scene.clear()
+        """ Asks to save any unsaved changes, then clears the scene """
+        if (self.maybeSave()):
+            self.centralWidget().scene.clear()
+            self.filename = None
+            self.changeTitle()
 
 
     def onFileOpen(self):
-        fname, filter = QFileDialog.getOpenFileName(self, 'Open graph from file')
-        if (fname == ''): return
-        if os.path.isfile(fname):
-            self.centralWidget().scene.loadFromFile(fname)
+        """ Asks to save any unsaved changes, then shows Open File dialog """
+        if self.maybeSave():
+            fname, filter = QFileDialog.getOpenFileName(self, 'Open graph from file')
+            if (fname == ''): return
+            if os.path.isfile(fname):
+                self.centralWidget().scene.loadFromFile(fname)
+                self.filename = fname
+                self.changeTitle()
 
 
     def onFileSave(self):
@@ -88,14 +146,16 @@ class NodeEditorWindow(QMainWindow):
         if (self.filename is None): return self.onFileSaveAs()
         self.centralWidget().scene.saveToFile(self.filename)
         self.statusBar().showMessage("Successfully saved %s" % self.filename)
+        return True
 
 
     def onFileSaveAs(self):
         """ Opens dialog where user can select path and filename to save scene """
         fname, filter = QFileDialog.getSaveFileName(self, 'Save graph to file')
-        if (fname == ''): return
+        if (fname == ''): return False
         self.filename = fname
         self.onFileSave()
+        return True
 
 
     def onEditUndo(self):
